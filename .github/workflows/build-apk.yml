@@ -31,6 +31,25 @@ jobs:
       - name: Install JS dependencies
         run: npm ci
 
+      # Checks run before the long Android build so a failure costs ~1-2 minutes, not ~15.
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: Lint
+        run: npx eslint . --ext .ts,.tsx
+
+      # Fails if coverage of the logic layers drops below the thresholds in jest.config.js.
+      - name: Test with coverage
+        run: npx jest --coverage
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 14
+
       - name: Set up Gradle (with cache)
         uses: gradle/actions/setup-gradle@v4
 
